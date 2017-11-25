@@ -34,7 +34,7 @@ pub fn check(hostname: &str) -> Result<Message,Box<Error>> {
 
     // NOTE: see 'Setup a connection' example above
     // Send the query and get a message response, see RecordType for all supported options
-    let response: Message = client.query(&name, DNSClass::IN, RecordType::ANY).unwrap();
+    let response: Message = client.query(&name, DNSClass::ANY, RecordType::ANY).unwrap();
 
     println!("{:#?}", response);
     Ok(response)
