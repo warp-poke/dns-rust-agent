@@ -22,7 +22,9 @@ pub fn check(hostname: &str) -> Result<Lookup,Box<Error>> {
     // Construct a new Resolver with default configuration options
     let resolver = Resolver::new(ResolverConfig::default(), ResolverOpts::default())?;
     // Lookup the IP addresses associated with a name.
-    let response = resolver.lookup(hostname,RecordType::ANY)?;
+    let response = resolver.lookup(hostname,RecordType::CNAME)?;
+    info!("{:?}", response);
+    println!("{:?}", response);
     Ok(response)
 }
 
@@ -51,9 +53,10 @@ pub fn handle_order(order: &Order) -> Result <(),Box<Error>> {
 
 pub fn main(){
     let order1 = Order{
-        hostname: "www.clever-cloud.com".to_owned(),
+        hostname: "clever-cloud.com".to_owned(),
         write_token: "cAM7xGIjBpJcoJ5D4FDpD677YEUXiZZBQEtGt2pJl0Ewjve20HZ_Ows8Yh8Ra5KIuoo5xQZuCulOnfN0FYN6Ck98nwsDvRYBIBQkiklyfoq91KVBbJSlwVOjTv79w0srREOqhgqSSfS7kk0n21GlgeybRRJ6t342fN4f2Y89WoJ".to_owned(),
         warp10_url: "http://hv-par2-021.clvrcld.net:19001/api/v0".to_owned(),
     };
-    handle_order(&order1).unwrap();
+    //handle_order(&order1).unwrap();
+    check(&order1.hostname);
 }
