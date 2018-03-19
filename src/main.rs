@@ -1,10 +1,20 @@
+extern crate env_logger;
 #[macro_use]
 extern crate log;
-extern crate env_logger;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+extern crate structopt;
+#[macro_use]
+extern crate structopt_derive;
 extern crate time;
-extern crate warp10;
+extern crate toml;
 extern crate trust_dns;
 extern crate trust_dns_resolver;
+extern crate warp10;
+
+mod cli;
+mod config;
 
 use std::error::Error;
 use std::str::FromStr;
@@ -13,6 +23,10 @@ use trust_dns::client::*;
 use trust_dns::udp::UdpClientConnection;
 use trust_dns::op::Message;
 use trust_dns::rr::{DNSClass, Name, RecordType};
+use structopt::StructOpt;
+
+use cli::Opt;
+use config::*;
 
 #[derive(Debug)]
 pub struct Order {
@@ -57,7 +71,11 @@ pub fn handle_order(order: &Order) -> Result<(), Box<Error>> {
 }
 
 pub fn main() {
-    env_logger::init();
+    env_logger::init().expect("Can't init env logger");
+    let opt = Opt::from_args();
+
+    let config = Config::new(&opt.config_path);
+    debug!("Config read: {:#?}", config);
 
     let order1 = Order{
         hostname: "clever-cloud.fr".to_owned(),
