@@ -4,13 +4,9 @@ version = "0.1.0"
 authors = ["Clément Nivolle <clement@nivolle.com>"]
 
 [dependencies]
-trust-dns-resolver = "0.6.0"
-warp10 = "0.8.1"
+warp10 = "0.8"
 log = "0.3.8"
 env_logger = "0.4.3"
 time = "0.1.38"
-itertools = "0.7.2"
-trust-dns = "0.12.0"
-serde = "1.0.21"
-serde_json = "1.0.6"
-serde_derive = "1.0.21"
+trust-dns = "0.13"
+trust-dns-resolver = "0.7"
