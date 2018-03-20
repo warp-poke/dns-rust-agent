@@ -11,8 +11,8 @@ use warp10;
 #[derive(Deserialize, Debug)]
 pub struct DnsOrder {
     pub domain_name: String,
-    warp10_endpoint: String,
-    token: String,
+    pub warp10_endpoint: String,
+    pub token: String,
 }
 
 impl From<DnsOrder> for Vec<warp10::Data> {

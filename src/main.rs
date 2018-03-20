@@ -20,6 +20,7 @@ extern crate futures_cpupool;
 mod cli;
 mod config;
 mod dns;
+mod warp;
 
 use structopt::StructOpt;
 use tokio_core::reactor::Core;
@@ -34,13 +35,7 @@ use rdkafka::consumer::stream_consumer::StreamConsumer;
 use cli::Opt;
 use config::*;
 use dns::{resolve_dns, DnsOrder};
-
-#[derive(Debug)]
-pub struct Order {
-    pub hostname: String,
-    pub write_token: String,
-    pub warp10_url: String,
-}
+use warp::warp10_post;
 
 pub fn main() {
     env_logger::init();
@@ -81,12 +76,17 @@ pub fn run_core(cfg: Config) {
         }).for_each(|msg| {
             let owned_message = msg.detach();
             let dns = cfg.dns.clone();
+
             let dns_order = serde_json::from_slice::<DnsOrder>(&owned_message.payload().unwrap()).unwrap();
+            let domain_name = dns_order.domain_name.clone();
+            let warp10_endpoint =  dns_order.warp10_endpoint.clone();
+            let write_token = dns_order.token.clone();
 
             let process_message = cpu_pool.spawn_fn(move || {
-                resolve_dns(&dns_order.domain_name, &dns)
+                resolve_dns(&domain_name, &dns)
             })
             .and_then(|res| {
+                warp10_post(Vec::new(), warp10_endpoint, write_token);
                 Ok(())
             })
             .or_else(|err| {
