@@ -1,5 +1,7 @@
 broker="localhost:9092"
-topic="poke.http"
+topic="poke.dns"
 consumer_group="test_consumer_group"
 host="changeme.localhost"
 zone="eu-west"
+dns="8.8.8.8:53"
+thread=4

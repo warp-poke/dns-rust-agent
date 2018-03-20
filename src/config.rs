@@ -13,6 +13,8 @@ pub struct Config {
     pub password: Option<String>,
     pub host: String,
     pub zone: String,
+    pub dns: String,
+    pub thread: usize,
 }
 
 impl Config {
@@ -37,6 +39,9 @@ impl Config {
             .or(cfg.as_ref().ok().and_then(|c| c.password.clone()));
         let host = env::var("HOST").unwrap_or(cfg.as_ref().map(|c| c.host.clone()).expect(err_msg));
         let zone = env::var("ZONE").unwrap_or(cfg.as_ref().map(|c| c.zone.clone()).expect(err_msg));
+        let dns = env::var("DNS").unwrap_or(cfg.as_ref().map(|c| c.dns.clone()).expect(err_msg));
+        //TODO: Use an env variable that you will parse to usize
+        let thread = cfg.map(|c| c.thread).unwrap_or(4);
 
         Self {
             broker,
@@ -46,6 +51,8 @@ impl Config {
             password,
             host,
             zone,
+            dns,
+            thread,
         }
     }
 }
