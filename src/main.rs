@@ -51,13 +51,23 @@ pub fn run_core(cfg: Config) {
     let mut core = Core::new().unwrap();
     let cpu_pool = Builder::new().pool_size(cfg.thread).create();
 
-    let consumer: StreamConsumer = ClientConfig::new()
+    let mut consumer_builder = ClientConfig::new();
+
+    if let (Some(ref user), Some(ref pass)) = (cfg.username.as_ref(), cfg.password.as_ref()) {
+        consumer_builder
+          .set("security.protocol", "SASL_SSL")
+          .set("sasl.mechanisms", "PLAIN")
+          .set("sasl.username", &user)
+          .set("sasl.password", &pass);
+    }
+
+    let consumer = consumer_builder
         .set("group.id", &cfg.consumer_group)
         .set("bootstrap.servers", &cfg.broker)
         .set("enable.partition.eof", "false")
         .set("session.timeout.ms", "6000")
-        .set("enable.auto.commit", "false")
-        .create()
+        .set("enable.auto.commit", "true")
+        .create::<StreamConsumer<_>>()
         .expect("Consumer creation failed");
 
     consumer.subscribe(&[&cfg.topic]).expect("Can't subscribe to specified topic");

@@ -769,6 +769,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "libz-sys 1.0.18 (registry+https://github.com/rust-lang/crates.io-index)",
  "num_cpus 0.2.13 (registry+https://github.com/rust-lang/crates.io-index)",
+ "openssl-sys 0.9.27 (registry+https://github.com/rust-lang/crates.io-index)",
  "pkg-config 0.3.9 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 

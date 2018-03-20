@@ -16,7 +16,7 @@ futures = "^0.1"
 tokio-core = "^0.1"
 warp10 = "0.10.0"
 trust-dns = "0.13.0"
-rdkafka = { version = "0.15.0", features = [ "dynamic_linking" ] }
+rdkafka = { version = "0.15.0", features = [ "ssl", "sasl", "dynamic_linking" ] }
 log = "^0.3"
 futures-cpupool = "*"
 env_logger = "*"
