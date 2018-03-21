@@ -10,9 +10,9 @@ RUN apk add --no-cache --virtual .build-dependencies \
     file \
     libgcc \
     musl-dev \
-    rust \
-    #RUN apk add --no-cache  openssl-dev
-    WORKDIR /source/
+    rust 
+#RUN apk add --no-cache  openssl-dev
+WORKDIR /source/
 RUN cargo build --release
 
 
