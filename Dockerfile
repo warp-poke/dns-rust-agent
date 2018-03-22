@@ -11,7 +11,7 @@ RUN apk add --no-cache --virtual .build-dependencies \
     libgcc \
     musl-dev \
     rust 
-RUN apk add --no-cache  openssl-dev
+RUN apk add --no-cache  openssl-dev librdkafka-dev
 WORKDIR /source/
 RUN cargo build --release
 
@@ -20,6 +20,6 @@ RUN cargo build --release
 
 FROM alpine:edge
 COPY config.toml /etc/poke-agent/config.toml
-RUN apk add --no-cache llvm-libunwind libgcc openssl
+RUN apk add --no-cache llvm-libunwind libgcc openssl librdkafka
 COPY --from=builder /source/target/release/dns-agent /usr/bin/dns-agent
 CMD ["/usr/bin/dns-agent", "--help"]
