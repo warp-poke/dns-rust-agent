@@ -1,11 +1,10 @@
 use std::str::FromStr;
 
-use trust_dns::client::*;
+use trust_dns::client::{SyncClient, Client};
 use trust_dns::udp::UdpClientConnection;
-use trust_dns::rr::{DNSClass, Name, RecordType};
-use trust_dns::op::Message as OpMessage;
-use time;
-use warp10;
+use trust_dns::rr::{DNSClass, Name, RecordType, Record};
+use std::result::Result;
+use std::error::Error;
 
 /// From the scheduler
 #[derive(Deserialize, Debug)]
@@ -15,26 +14,29 @@ pub struct DnsOrder {
     pub token: String,
 }
 
-impl From<DnsOrder> for Vec<warp10::Data> {
-    fn from(item: DnsOrder) -> Self {
-        vec![
-            warp10::Data::new(
-                time::now_utc().to_timespec(),
-                None,
-                "dns.agent".to_string(),
-                Vec::new(),
-                warp10::Value::Int(0),
-            )
-        ]
+#[derive(Debug)]
+pub struct DnsResult {
+    pub type_dns: RecordType,
+    pub ttl: u32,
+    pub value: String,
+}
+
+impl From<Record> for DnsResult {
+    fn from(record: Record) -> Self {
+        Self {
+            type_dns: record.rr_type(),
+            ttl: record.ttl(),
+            value: record.name().to_string(),
+        }
     }
 }
 
-pub fn resolve_dns(domain_name: &str, dns: &str) -> Result<OpMessage, String> {
+pub fn resolve_dns(domain_name: &str, dns: &str) -> Result<Vec<Record>, String> {
     let conn = UdpClientConnection::new(dns.parse().unwrap()).unwrap();
     let client = SyncClient::new(conn);
     let name = Name::from_str(domain_name).unwrap();
-    let response = client.query(&name, DNSClass::IN, RecordType::A).unwrap();
-    debug!("DNS client response: {:#?}", response);
 
-    Ok(response)
+    client.query(&name, DNSClass::IN, RecordType::A)
+        .map_err(|e| e.description().to_string())
+        .map(|mut res| res.take_answers())
 }

@@ -22,6 +22,8 @@ mod config;
 mod dns;
 mod warp;
 
+use std::error::Error;
+
 use structopt::StructOpt;
 use tokio_core::reactor::Core;
 use rdkafka::Message;
@@ -34,8 +36,9 @@ use rdkafka::consumer::stream_consumer::StreamConsumer;
 
 use cli::Opt;
 use config::*;
-use dns::{resolve_dns, DnsOrder};
-use warp::warp10_post;
+use dns::*;
+use warp::{warp10_post, DnsQueryResults};
+use warp10::Label;
 
 pub fn main() {
     env_logger::init();
@@ -86,6 +89,8 @@ pub fn run_core(cfg: Config) {
         }).for_each(|msg| {
             let owned_message = msg.detach();
             let dns = cfg.dns.clone();
+            let zone = cfg.host.clone();
+            let host = cfg.host.clone();
 
             let dns_order = serde_json::from_slice::<DnsOrder>(&owned_message.payload().unwrap()).unwrap();
             let domain_name = dns_order.domain_name.clone();
@@ -95,9 +100,17 @@ pub fn run_core(cfg: Config) {
             let process_message = cpu_pool.spawn_fn(move || {
                 resolve_dns(&domain_name, &dns)
             })
-            .and_then(|res| {
-                warp10_post(Vec::new(), warp10_endpoint, write_token);
-                Ok(())
+            .and_then(move |records| {
+                let dns_results = records.into_iter()
+                                        .map(|r| DnsResult::from(r))
+                                        .collect();
+
+                let mut query_result = DnsQueryResults::new(dns_results);
+                query_result.labels.push(Label::new("zone", &zone));
+                query_result.labels.push(Label::new("host", &host));
+
+                warp10_post(query_result.into(), warp10_endpoint, write_token)
+                    .map_err(|e| e.description().to_string())
             })
             .or_else(|err| {
                 error!("Error while processing message: {:?}", err);
