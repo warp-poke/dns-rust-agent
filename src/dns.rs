@@ -4,7 +4,6 @@ use trust_dns::client::{SyncClient, Client};
 use trust_dns::udp::UdpClientConnection;
 use trust_dns::rr::{DNSClass, Name, RecordType, Record};
 use std::result::Result;
-use std::error::Error;
 
 /// From the scheduler
 #[derive(Deserialize, Debug)]
@@ -37,6 +36,6 @@ pub fn resolve_dns(domain_name: &str, dns: &str) -> Result<Vec<Record>, String> 
     let name = Name::from_str(domain_name).unwrap();
 
     client.query(&name, DNSClass::IN, RecordType::A)
-        .map_err(|e| e.description().to_string())
+        .map_err(|e| e.to_string())
         .map(|mut res| res.take_answers())
 }
