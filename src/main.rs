@@ -12,7 +12,7 @@ extern crate time;
 extern crate toml;
 extern crate trust_dns;
 extern crate warp10;
-extern crate tokio_core;
+extern crate tokio;
 extern crate rdkafka;
 extern crate futures;
 extern crate futures_cpupool;
@@ -25,7 +25,7 @@ mod warp;
 use std::error::Error;
 
 use structopt::StructOpt;
-use tokio_core::reactor::Core;
+use tokio::executor::current_thread::CurrentThread;
 use rdkafka::Message;
 use futures::Future;
 use futures::stream::Stream;
@@ -51,7 +51,7 @@ pub fn main() {
 }
 
 pub fn run_core(cfg: Config) {
-    let mut core = Core::new().unwrap();
+    let mut io_loop = CurrentThread::new();
     let cpu_pool = Builder::new().pool_size(cfg.thread).create();
 
     let mut consumer_builder = ClientConfig::new();
@@ -75,7 +75,7 @@ pub fn run_core(cfg: Config) {
 
     consumer.subscribe(&[&cfg.topic]).expect("Can't subscribe to specified topic");
 
-    let handle = core.handle();
+    let handle = io_loop.handle();
 
     let processed_stream = consumer.start()
         .filter_map(|result| {
@@ -122,5 +122,5 @@ pub fn run_core(cfg: Config) {
         });
 
     info!("Thread pool running");
-    core.run(processed_stream).expect("Failed to start the event loop");
+    io_loop.block_on(processed_stream).expect("Failed to start the event loop");
 }
