@@ -117,7 +117,7 @@ pub fn run_core(cfg: Config) {
                 Ok(())
             });
 
-            handle.spawn(process_message);
+            handle.spawn(process_message).unwrap();
             Ok(())
         });
 
